@@ -349,23 +349,39 @@ async function goNext() {
     render();
     return;
   }
-  // 送信
+  // 送信（リトライ処理付き）
   const btn = document.getElementById('btn-next');
   btn.disabled = true;
   btn.textContent = '送信中...';
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(st)
-    });
+  const maxRetry = 3;
+  let success = false;
+  for (let i = 0; i < maxRetry; i++) {
+    try {
+      if (i > 0) {
+        btn.textContent = `再送信中... (${i+1}/${maxRetry})`;
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(st)
+      });
+      success = true;
+      break;
+    } catch(e) {
+      if (i === maxRetry - 1) {
+        const el = document.getElementById('err-msg');
+        el.textContent = '送信に失敗しました。電波の良い場所で再度お試しください。';
+        el.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '送信する ✓';
+      }
+    }
+  }
+  if (success) {
     step = TOTAL + 1;
     render();
-  } catch(e) {
-    document.getElementById('err-msg').style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = '送信する ✓';
   }
 }
 
