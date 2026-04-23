@@ -299,11 +299,51 @@ function setNone(key, noneVal) {
   render();
 }
 
+function validate() {
+  if (step===1) {
+    if (!st.name.trim()) return 'お名前を入力してください';
+    if (!st.dob) return '生年月日を入力してください';
+    if (!st.address.trim()) return 'ご住所を入力してください';
+    if (!st.phone.trim()) return '電話番号を入力してください';
+  }
+  if (step===2) {
+    if (!st.techo_yn) return 'お薬手帳の有無を選んでください';
+  }
+  if (step===3) {
+    if (!st.rx) return '処方薬の有無を選んでください';
+  }
+  if (step===4) {
+    if (!st.otc) return '市販薬・健康食品の有無を選んでください';
+  }
+  if (step===5) {
+    if (!st.allergy_yn) return 'アレルギーの有無を選んでください';
+    if (!st.owa_yn) return '合わなかったお薬の有無を選んでください';
+  }
+  if (step===6) {
+    if (!st.taishitsu.length) return '体質を選んでください（なしでも可）';
+    if (!st.seikatsu.length) return '生活環境を選んでください（なしでも可）';
+  }
+  if (step===7) {
+    if (!st.shiko.length) return '嗜好品を選んでください（なしでも可）';
+    if (!st.kigyo_yn) return '既往歴の有無を選んでください';
+  }
+  if (step===8) {
+    if (!st.pregnant) return '妊娠・授乳の状況を選んでください';
+  }
+  return null;
+}
+
 function goBack() {
   if (step > 1) { step--; render(); }
 }
 
 async function goNext() {
+  const err = validate();
+  if (err) {
+    const el = document.getElementById('err-msg');
+    if (el) { el.textContent = err; el.style.display = 'block'; }
+    return;
+  }
   if (step < TOTAL) {
     step++;
     render();
